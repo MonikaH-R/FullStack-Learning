@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Chat Diary</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&family=Dancing+Script:wght@500&display=swap">
+    <style>
+        :root {
+            --primary-color: #FF9EAA;
+            --secondary-color: #A2D2FF;
+            --accent-color: #FFD6A5;
+            --text-color: #5A5766;
+            --bg-color: #FFF8F0;
+            --shadow-color: rgba(90, 87, 102, 0.1);
+            --receive-bubble: #F8F7FF;
+            --send-bubble: #FFE5EC;
+            --btn-hover: #FF85A2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .date-display {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .chat-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
+        }
+
+        .chat-header-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 18px;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+            word-wrap: break-word;
+        }
+
+        .receive {
+            align-self: flex-start;
+            background-color: var(--receive-bubble);
+            border-bottom-left-radius: 4px;
+        }
+
+        .send {
+            align-self: flex-end;
+            background-color: var(--send-bubble);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--text-color);
+            opacity: 0.5;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .message-image {
+            margin-top: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            max-width: 100%;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .message-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid #eee;
+            gap: 10px;
+        }
+
+        .input-group {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+        }
+
+        textarea {
+            flex: 1;
+            border: 2px solid #eee;
+            border-radius: 20px;
+            padding: 12px 15px;
+            resize: none;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--btn-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+        .image-upload {
+            position: relative;
+            display: inline-block;
+        }
+
+        .image-upload input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .memory-list {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255,255,255,0.95);
+            z-index: 20;
+            padding: 30px;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+        }
+
+        .memory-list.active {
+            transform: translateX(0);
+        }
+
+        .memory-list h2 {
+            font-family: 'Dancing Script', cursive;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .memories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .memory-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 3px 10px var(--shadow-color);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .memory-date {
+            font-size: 0.8rem;
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+
+        .memory-text {
+            margin-bottom: 10px;
+        }
+
+        .memory-image {
+            width: 100%;
+            height: 150px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .memory-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .memories-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Memory Chat</h1>
+            <div class="date-display" id="current-date"></div>
+        </header>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-header-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h2>Daily Diary</h2>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be loaded here -->
+            </div>
+
+            <div class="chat-input">
+                <div class="input-group">
+                    <textarea id="message-input" placeholder="Write your thoughts here..."></textarea>
+                    <div class="image-upload">
+                        <button class="btn" title="Add image">
+                            <i class="fas fa-image"></i>
+                        </button>
+                        <input type="file" id="image-input" accept="image/*">
+                    </div>
+                </div>
+                <button class="btn" id="send-btn" title="Send">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-btn" id="memory-btn">
+        <i class="fas fa-book"></i>
+    </div>
+
+    <div class="memory-list" id="memory-list">
+        <div class="close-btn" id="close-memories">
+            <i class="fas fa-times"></i>
+        </div>
+        <h2>Your Memories</h2>
+        <div class="memories-grid" id="memories-grid">
+            <!-- Memories will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display current date
+            const dateDisplay = document.getElementById('current-date');
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateDisplay.textContent = now.toLocaleDateString('en-US', options);
+
+            // DOM elements
+            const messageInput = document.getElementById('message-input');
+            const sendBtn = document.getElementById('send-btn');
+            const chatMessages = document.getElementById('chat-messages');
+            const imageInput = document.getElementById('image-input');
+            const memoryBtn = document.getElementById('memory-btn');
+            const memoryList = document.getElementById('memory-list');
+            const closeMemories = document.getElementById('close-memories');
+            const memoriesGrid = document.getElementById('memories-grid');
+
+            // Load saved messages
+            loadMessages();
+
+            // Send message function
+            function sendMessage() {
+                const messageText = messageInput.value.trim();
+                if (messageText) {
+                    const message = {
+                        text: messageText,
+                        date: new Date().toISOString(),
+                        type: 'send'
+                    };
+                    
+                    saveMessage(message);
+                    displayMessage(message);
+                    messageInput.value = '';
+                }
+            }
+
+            // Send button click event
+            sendBtn.addEventListener('click', sendMessage);
+
+            // Enter key event
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Image upload event
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const message = {
+                            image: event.target.result,
+                            text: '',
+                            date: new Date().toISOString(),
+                            type: 'send'
+                        };
+                        
+                        saveMessage(message);
+                        displayMessage(message);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Display message function
+            function displayMessage(message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${message.type}`;
+                
+                const time = new Date(message.date);
+                const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                if (message.text) {
+                    messageDiv.innerHTML = `
+                        <div class="message-text">${message.text}</div>
+                        <div class="message-time">${timeString}</div>
+                    `;
+                } else if (message.image) {
+                    messageDiv.innerHTML = `
+                        <div class="message-image">
+                            <img src="${message.image}" alt="Uploaded memory of a diary entry with personal thoughts" />
+                        </div>
+                        <div class="message-time">${timeString}</div>
+                    `;
+                }
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Save message to localStorage
+            function saveMessage(message) {
+                let messages = JSON.parse(localStorage.getItem('memoryChatMessages')) || [];
+                messages.push(message);
+                localStorage.setItem('memoryChatMessages', JSON.stringify(messages));
+            }
+
+            // Load messages from localStorage
+            function loadMessages() {
+                let messages = JSON.parse(localStorage.getItem('memoryChatMessages')) || [];
+                
+                // Add a welcome message if no messages exist
+                if (messages.length === 0) {
+                    const welcomeMessage = {
+                        text: "Welcome to your memory diary! Write your thoughts and memories here. You can even add pictures! 💖",
+                        date: new Date().toISOString(),
+                        type: 'receive'
+                    };
+                    messages.push(welcomeMessage);
+                    localStorage.setItem('memoryChatMessages', JSON.stringify(messages));
+                }
+                
+                messages.forEach(message => displayMessage(message));
+            }
+
+            // Toggle memory list
+            memoryBtn.addEventListener('click', function() {
+                memoryList.classList.add('active');
+                loadMemories();
+            });
+
+            closeMemories.addEventListener('click', function() {
+                memoryList.classList.remove('active');
+            });
+
+            // Load memories for the memory list
+            function loadMemories() {
+                let messages = JSON.parse(localStorage.getItem('memoryChatMessages')) || [];
+                memoriesGrid.innerHTML = '';
+                
+                // Filter out welcome message
+                messages = messages.filter(msg => msg.type === 'send');
+                
+                if (messages.length === 0) {
+                    memoriesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No memories yet. Start writing!</p>';
+                    return;
+                }
+                
+                messages.forEach(message => {
+                    const memoryCard = document.createElement('div');
+                    memoryCard.className = 'memory-card';
+                    
+                    const time = new Date(message.date);
+                    const dateString = time.toLocaleDateString('en-US', options);
+                    const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    if (message.text) {
+                        memoryCard.innerHTML = `
+                            <div class="memory-date">${dateString} at ${timeString}</div>
+                            <div class="memory-text">${message.text}</div>
+                        `;
+                    } else if (message.image) {
+                        memoryCard.innerHTML = `
+                            <div class="memory-date">${dateString} at ${timeString}</div>
+                            <div class="memory-image">
+                                <img src="${message.image}" alt="Saved memory image from diary entry" />
+                            </div>
+                        `;
+                    }
+                    
+                    memoryCard.addEventListener('click', function() {
+                        // Clear chat and display just this memory
+                        chatMessages.innerHTML = '';
+                        displayMessage(message);
+                        memoryList.classList.remove('active');
+                    });
+                    
+                    memoriesGrid.appendChild(memoryCard);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
